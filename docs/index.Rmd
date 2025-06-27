@@ -1,0 +1,1368 @@
+---
+title: "Tahnee Ames, MSc"
+output:
+  html_document:
+    rmdformats::robobook
+---
+
+
+# About
+
+Data visualization is critical for effective communication of scientific data. This portfolio illustrates my dedication to assisting scientists, especially in the biological fields, in crafting aesthetically appealing figures that can show off their data.  <br>
+<br>
+
+Dropdown menu includes code and resultant figures, sorted by plot type.
+
+<br>
+
+
+[GitHub](https://github.com/tahneeames)
+
+[CV](https://drive.google.com/file/d/1uXixXWEiD5U9z56kQzbo_iN0lrLu0wrd/view?usp=sharing)
+
+[Google Scholar](https://scholar.google.com/citations?user=cw7zdrkAAAAJ&hl=en)
+
+<br>
+
+# Split violin plot
+
+Split violin plots using [microarthropod data](https://github.com/tahneeames/microarthropod).<br>
+Showing univariate data betwween two treatments, each with three levels.
+
+## Code 
+```{r, message=FALSE}
+#libraries used 
+library(vegan)
+library(betapart)
+library(psych)
+library(ggplot2)
+library(ggthemes)
+library(ggnewscale)
+library(gridExtra)
+library(knitr)
+library(patchwork)
+```
+
+```{r, include=FALSE}
+metadata=read.table("~/Desktop/Microarthropod/Stat Sheets/metadata_dwALL.txt",header=T,sep="\t")
+#I separated the taxa counts in each sample, called taxadata here 
+taxadata=read.table("~/Desktop/Microarthropod/Stat Sheets/taxaData_ALL.txt",header=T,sep="\t")
+```
+
+```{r, include=FALSE}
+treatment=c(rep("corridor bryophyte",32),rep("corridor lichen",24),rep("shelterwood bryophyte",32,),rep("shelterwood lichen",24))
+metadata=data.frame(metadata,treatment)
+epiphytesep=rep(c("Basal","Bole","Lichen","Basal","Bole","Lichen"),times=c(16,16,24,16,16,24))
+newFactor=rep(c("corridorSkirt","corridorBole","corridorLichen","shelterwoodSkirt","shelterwoodBole","shelterwoodLichen"),times=c(16,16,24,16,16,24))
+metadataMossType=cbind(metadata,epiphytesep,newFactor)
+
+#calculating richness, adding to meta data
+rowSums(taxadata>0)->"richness"
+metadata=data.frame(metadata,richness)
+#and abundance
+rowSums(taxadata)->"abundance"
+metadata=data.frame(metadata,abundance)
+#and diversity
+diversity(taxadata,index="shannon")->"diversity"
+metadata=data.frame(metadata,diversity)
+
+#Making a new data frame, separating the epiphyte categories into 3 rather than two (aspect of bryophyte, skirt or bole of tree)
+epiphytesep=rep(c("Basal","Bole","Lichen","Basal","Bole","Lichen"),times=c(16,16,24,16,16,24))
+newFactor=rep(c("corridorSkirt","corridorBole","corridorLichen","shelterwoodSkirt","shelterwoodBole","shelterwoodLichen"),times=c(16,16,24,16,16,24))
+metadataMossType=cbind(metadata,epiphytesep,newFactor)
+```
+
+```{r, warning=FALSE, out.width="100%"}
+#plot code 
+#split violin plot for variable:abundance  
+abund_wrap<-ggplot(metadataMossType, aes(x=reorder(epiphytesep,-abundance), y=log10(abundance),fill=newFactor,color=newFactor))+
+introdataviz::geom_split_violin(alpha=.6,trim = FALSE)+
+ stat_summary(fun.data = "mean_se", geom = "pointrange",size=0.25, show.legend = F, 
+               position = position_dodge(.4)) +
+labs(x = element_blank(),y=(bquote("(B) "~log[10]~Density/25~cm^2~{})))+
+scale_color_manual(values=c("#5D8852","#6D92B1","#477567","#6EA161","#87B4DA","#70A08F"),guide="none")+
+scale_fill_manual(values=c("#7FB069","#90C2E7","#477567","#92CE7B","#9FDDF7","#70A08F"),guide="none")+
+theme_tufte()+
+theme(plot.title = element_text(size = 13, family = "Times", face = "bold"),
+  text = element_text(size = 12, family = "Times"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 10),
+  axis.text.y=element_text(size = 10),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position ="none")
+```
+
+```{r}
+#split violin plot for variable:richness  
+rich_wrap<-ggplot(metadataMossType, aes(x=reorder(epiphytesep,-abundance), y=richness,fill=newFactor,color=newFactor))+
+introdataviz::geom_split_violin(alpha=.6,trim = FALSE)+
+ stat_summary(fun.data = "mean_se", geom = "pointrange",size=0.25, show.legend = F, 
+               position = position_dodge(.4)) +
+labs(x = element_blank(),y=(bquote("(A) "~Richness/25~cm^2~{})))+
+scale_color_manual(values=c("#5D8852","#6D92B1","#477567","#6EA161","#87B4DA","#70A08F"),guide="none")+
+scale_fill_manual(values=c("#7FB069","#90C2E7","#477567","#92CE7B","#9FDDF7","#70A08F"),guide="none")+
+theme_tufte()+
+theme(plot.title = element_text(size = 13, family = "Times", face = "bold"),
+  text = element_text(size = 12, family = "Times"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 10),
+  axis.text.y=element_text(size = 10),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position ="none")
+```
+
+```{r}
+#split violin plot for variable:diversity  
+div_wrap<-ggplot(metadataMossType, aes(x=reorder(epiphytesep,-abundance), y=diversity,fill=newFactor,color=newFactor))+
+introdataviz::geom_split_violin(alpha=.6,trim = FALSE)+
+ stat_summary(fun.data = "mean_se", geom = "pointrange", size=0.25,show.legend = F, 
+               position = position_dodge(.4)) +
+labs(x = element_blank(),y=(bquote("(C) "~Diversity/25~cm^2~{})))+
+scale_color_manual(values=c("#5D8852","#6D92B1","#477567","#6EA161","#87B4DA","#70A08F"),guide="none")+
+scale_fill_manual(values=c("#7FB069","#90C2E7","#477567","#92CE7B","#9FDDF7","#70A08F"),guide="none")+
+theme_tufte()+
+theme(plot.title = element_text(size = 13, family = "Times", face = "bold"),
+  text = element_text(size = 12, family = "Times"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 10),
+  axis.text.y=element_text(size = 10),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position ="none")
+```
+
+```{r}
+#combine plots
+Violin <- (abund_wrap | rich_wrap | div_wrap)
+
+```
+
+## Figure
+
+```{r}
+Violin
+```
+
+<br>
+
+# NMDS
+
+Ordination using the same microarthropod dataset as Violin.
+```{r include=FALSE}
+NMDS=metaMDS(taxadata,distance="binomial",trymax=999)
+MDS1 = NMDS$points[,1]
+MDS2 = NMDS$points[,2]
+NMDSord= data.frame(MDS1 = MDS1, MDS2 = MDS2)
+```
+
+## Code
+```{r, message=FALSE}
+#packages used 
+library(vegan)
+library(betapart)
+library(psych)
+library(ggplot2)
+library(ggthemes)
+```
+
+```{r, warning=FALSE, out.width="100%"}
+#plot code 
+Ordination=ggplot(NMDSord, aes(x=MDS1, y=MDS2))+
+geom_point(aes(color=metadataMossType$newFactor, fill=metadataMossType$newFactor,shape=factor(metadataMossType$newFactor)),size=2.5)+
+scale_fill_manual(values=alpha(c("#477567","#5D8852","#6D92B1","#70A08F","#6EA161","#87B4DA"),.6),
+  name ="Sample",
+  breaks=c("corridorSkirt","corridorBole","corridorLichen","shelterwoodSkirt","shelterwoodBole","shelterwoodLichen"),
+  labels=c("Corridor Basal","Corridor Bole","Corridor Lichen","Shelterwood Basal","Shelterwood Bole","Shelterwood Lichen"))+
+scale_color_manual(values=c("#477567","#5D8852","#6D92B1","#70A08F","#6EA161","#87B4DA"),
+  name ="Sample",
+  breaks=c("corridorSkirt","corridorBole","corridorLichen","shelterwoodSkirt","shelterwoodBole","shelterwoodLichen"),
+  labels=c("Corridor Basal","Corridor Bole","Corridor Lichen","Shelterwood Basal","Shelterwood Bole","Shelterwood Lichen"))+
+new_scale("color")+
+scale_shape_manual(values=c(21,21,21,24,24,24),
+  name="Sample",breaks=c("corridorSkirt","corridorBole","corridorLichen","shelterwoodSkirt","shelterwoodBole","shelterwoodLichen"),
+  labels=c("Corridor Basal","Corridor Bole","Corridor Lichen","Shelterwood Basal","Shelterwood Bole","Shelterwood Lichen"))+
+stat_ellipse(size=1,aes(x = MDS1,y=MDS2,color=metadataMossType$epiphytesep,linetype=factor(metadataMossType$standType)))+
+scale_linetype_discrete(name="Treatment", labels=c("Corridor","Shelterwood"))+
+scale_color_manual(values=c("#477567","#7FB069","#90C2E7"),name="Epiphyte", breaks=c("Basal","Bole","Lichen"),labels=c("Basal","Bole","Lichen"))+
+labs(x="NMDS 1", y="NMDS 2")+
+theme_bw()+
+theme(plot.title = element_text(size = 15, family = "Times", face = "bold"),text = element_text(size = 12, family = "Times"),axis.title = element_text(face="bold"),axis.text.x=element_text(size = 10),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),panel.border = element_blank())+ 
+theme(legend.justification=c(1,1), legend.position=c(1,1))+
+theme(legend.background = element_rect(fill = "transparent"),legend.key = element_rect(fill = "transparent", color = NA))+
+xlim(NA,11)+theme(panel.background = element_rect(fill = "transparent",colour = "transparent"))+ 
+theme(plot.background = element_rect(fill = "transparent"))+
+ theme(legend.key.height= unit(.5, 'cm'),
+        legend.key.width= unit(.5, 'cm'))
+```
+
+## Figure
+
+```{r}
+Ordination
+```
+
+<br>
+
+# PCA 
+Principle Components Analysis of differential gene expression between tracheal tissue, malpighian tubule tissue, and midgut tissue, using [Chaoborid dataset](https://github.com/tahneeames/chaoboridae). 
+<br>
+
+##Code 
+
+```{r, message=FALSE, warning=FALSE}
+#packages used 
+library(DESeq2)
+library(ggplot2)
+library(ggthemes)
+library(scales)
+library(patchwork)
+library(gridExtra)
+library(MetBrewer)
+library(dplyr)
+```
+
+```{r include=FALSE}
+#now with eucorethra
+euc_geneCounts=read.table("~/Desktop/Chaoborid/resultsFiles/eucorethra/trimmed/eucorethra.salmon.gene.counts.matrix",header=T,sep='\t',row.names=1)
+euc_metadata=read.table("~/Desktop/Chaoborid/resultsFiles/eucorethra/euc_metadata.txt",header=T,sep="\t", row.names=1)
+#convert gene count file into matrix
+euc_geneCounts_matrix=as.matrix(euc_geneCounts)
+#convert replicate number from numeric 
+euc_metadata$rep=as.factor(euc_metadata$rep)
+
+#make deseq2 dataframe from these dataframes
+euc_dds <- DESeqDataSetFromMatrix(countData=round(euc_geneCounts_matrix), colData=euc_metadata, design= ~ tissue)
+#remove values less than 5
+euc_dds5 <- euc_dds[rowSums(counts(euc_dds)) >= 5,]
+#run deseq2
+euc_deSeq5=DESeq(euc_dds5)
+euc_DE=data.frame(results(euc_deSeq5))
+euc_deMT5 = results(euc_deSeq5,contrast=c("tissue","trach","malTube"))
+euc_deGI5=results(euc_deSeq5,contrast=c("tissue","trach","gut"))
+euc_deMT5_DF =as.data.frame(euc_deMT5)
+euc_deGI5_DF = as.data.frame(euc_deGI5)
+#differentual expression column based on p-values and log2-fold change values 
+euc_deMT5_DF$diffexpressed10 <- "NO"
+euc_deMT5_DF$diffexpressed10[euc_deMT5_DF$log2FoldChange > 10 & euc_deMT5_DF$pvalue < 0.05] <- "UP"
+euc_deMT5_DF$diffexpressed10[euc_deMT5_DF$log2FoldChange < -10 & euc_deMT5_DF$pvalue < 0.05] <- "DOWN"
+euc_deGI5_DF$diffexpressed10 <- "NO"
+euc_deGI5_DF$diffexpressed10[euc_deGI5_DF$log2FoldChange > 10 & euc_deGI5_DF$pvalue < 0.05] <- "UP"
+euc_deGI5_DF$diffexpressed10[euc_deGI5_DF$log2FoldChange < -10 & euc_deGI5_DF$pvalue < 0.05] <- "DOWN"
+
+euc_deMT5_DF$diffexpressed5 <- "NO"
+euc_deMT5_DF$diffexpressed5[euc_deMT5_DF$log2FoldChange > 5 & euc_deMT5_DF$pvalue < 0.05] <- "UP"
+euc_deMT5_DF$diffexpressed5[euc_deMT5_DF$log2FoldChange < -5 & euc_deMT5_DF$pvalue < 0.05] <- "DOWN"
+euc_deGI5_DF$diffexpressed5 <- "NO"
+euc_deGI5_DF$diffexpressed5[euc_deGI5_DF$log2FoldChange > 5 & euc_deGI5_DF$pvalue < 0.05] <- "UP"
+euc_deGI5_DF$diffexpressed5[euc_deGI5_DF$log2FoldChange < -5 & euc_deGI5_DF$pvalue < 0.05] <- "DOWN"
+
+#two 
+euc_deMT5_DF$diffexpressed2 <- "NO"
+euc_deMT5_DF$diffexpressed2[euc_deMT5_DF$log2FoldChange > 2 & euc_deMT5_DF$pvalue < 0.05] <- "UP"
+euc_deMT5_DF$diffexpressed2[euc_deMT5_DF$log2FoldChange < -2 & euc_deMT5_DF$pvalue < 0.05] <- "DOWN"
+euc_deGI5_DF$diffexpressed2 <- "NO"
+euc_deGI5_DF$diffexpressed2[euc_deGI5_DF$log2FoldChange > 2 & euc_deGI5_DF$pvalue < 0.05] <- "UP"
+euc_deGI5_DF$diffexpressed2[euc_deGI5_DF$log2FoldChange < -2 & euc_deGI5_DF$pvalue < 0.05] <- "DOWN"
+
+euc_rld<-rlog(euc_deSeq5,blind=TRUE)
+euPCA=plotPCA(euc_rld,intgroup=c("tissue","rep"),returnData=TRUE)
+```
+
+```{r}
+#Plot code 
+PCA=ggplot(euPCA,aes(PC1,PC2,col=tissue,shape=rep,fill=tissue))+
+geom_point(size=4)+
+scale_color_manual(name="Tissue",labels=c("Trachea","Midgut","Malpighian tubule"),values=c("#718038","#A33B20","#BC7D38"),limits=c("trach","malTube","gut"))+
+scale_fill_manual(name="Tissue",labels=c("Trachea","Midgut","Malpighian tubule"),values=c("#718038","#A33B20","#BC7D38"),limits=c("trach","malTube","gut"))+
+scale_shape_manual(name="Replicate",labels=c("1","2","3"),values=c(21,22,24),limits=c("1","2","3"))+
+theme_few()+
+theme(plot.title = element_text(size = 12, family = "Times", face = "bold"),
+  text = element_text(size = 12, family = "Times"),
+  axis.title = element_text(face="bold",size=12),
+  axis.text.x=element_text(size = 12),
+  axis.text.y=element_text(size = 12),
+  strip.text = element_text(face="bold"))+
+theme(legend.title = element_text(size = 12, face = "bold"),text=element_text(size =12, family = "Times"))+
+theme(legend.position=c(.9,.3))+
+guides(color=guide_legend(order=2),fill=guide_legend(order=2),shape=guide_legend(order=1))+
+theme(legend.background = element_rect(fill = "transparent"),legend.key = element_rect(fill = "transparent", color = NA))+
+theme(panel.background = element_rect(fill = "transparent",colour = "transparent"))+ 
+theme(plot.background = element_rect(fill = "transparent"))
+```
+
+## Figure 
+```{r}
+PCA
+```
+
+<br>
+
+# Volcano plot 
+
+Volcano plot showing gene expression data using the same Chaoborid data from PCA, comparing tracheal tissue to Malpighian tubule tissue and midgut tissue 
+
+## Code 
+```{r}
+#plot code 
+#pairwise 1 
+euc_volcano_MT <- ggplot(data=euc_deMT5_DF, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed2)) + geom_point(alpha=0.75) + theme_few() + 
+geom_vline(xintercept=c(-2, 2), col="#8d642c") +
+geom_hline(yintercept=-log10(0.05), col="#8d642c")+
+labs(title="Trachea v Malpighian Tubules",x= element_blank(),y= element_blank()) +
+theme(plot.title = element_text(size = 13, family = "Tahoma", face = "bold"),
+  text = element_text(size = 12, family = "Tahoma"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 13),
+  axis.text.y=element_text(size = 13),
+  strip.text = element_text(face="bold"))+
+scale_color_manual(name="",labels=c("Up","Down","No"), values=c("#718038","#A33B20","#D2CAC5"),limits=c("UP","DOWN","NO"))+
+ylim(NA,130)+
+xlim(-30,30)+
+theme(legend.position=c(.8,.8))
+
+#pairwise 2
+euc_volcano_GI <- ggplot(data=euc_deGI5_DF, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed2)) + geom_point(alpha=0.75) + theme_few() + 
+geom_vline(xintercept=c(-2, 2), col="#8d642c") +
+geom_hline(yintercept=-log10(0.05), col="#8d642c")+
+labs(title="Trachea v Midut",x= element_blank(),y= element_blank()) + 
+theme(plot.title = element_text(size = 13, family = "Tahoma", face = "bold"),
+  text = element_text(size = 12, family = "Tahoma"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 13),
+  axis.text.y=element_text(size = 13),
+  strip.text = element_text(face="bold"))+
+scale_color_manual(name="",labels=c("Up","Down","No"), values=c("#718038","#BC7D38","#D2CAC5"),limits=c("UP","DOWN","NO"))+
+ylim(NA,130)+
+xlim(-30,30)+
+theme(legend.position=c(.8,.8))
+
+#combine 
+Volcano <- euc_volcano_MT + euc_volcano_GI 
+```
+
+## Figure
+```{r, warning=FALSE}
+Volcano
+```
+
+<br>
+
+# Histogram 
+Combined figure illustrating transcriptome assembly completeness based on BLAST identity, by gene class. using Chaoborid assembly data. 
+
+## Code 
+
+```{r, message=FALSE}
+#libraries used 
+library(ggplot2)
+library(ggthemes)
+library(gridExtra)
+library(patchwork)
+library(MetBrewer)
+library(tidyverse)
+library(cowplot)
+```
+
+```{r include=FALSE} 
+
+geneContent=read.table("~/Desktop/Chaoborid/resultsFiles/eucorethra/trimmed/eucorethra.trimmed_targetedQuery.txt",header=T,sep="\t")  
+```
+
+```{r, warning=FALSE}
+#plot code 
+#plot identity of BLAST hit (x-axis) and length of hit divided by length of query (y-axis)
+id_by_length <- ggplot(geneContent,aes(x=percIdent,y=percSeq,fill=class,color=class)) + 
+geom_point(shape=21,alpha=0.65,size=2.3) + 
+labs(x="Percent identity of BLAST hit",y="BLAST hit length / query length") + 
+scale_color_manual(values=met.brewer('Moreau',16),
+  name ="Class",
+  breaks=c("carbonicAnhydrase","channel_Cl","channel_K","channel_water","cuticularProtein","DEGENaC_pickpocket","exchanger_CPA","exchanger_other","NaKatpase_subunit","receptor_CAPA","receptor_leukokinin","receptor_serotonin","Resilin","vatpaseSubunit","V0_domain"),
+  labels=c("Carbonic anhydrase",expression(paste("Cl"^"-","channel")),expression(paste("K"^"+","channel")),"Water channel","Cuticular protein","Pickpocket gene","CPA exchanger","Other exchanger",expression(paste("Na"^"+","K"^"+","ATPase subunit")),"CAPA receptor","Leukokinin receptor","Serotonin receptor","Resilin",expression(paste("Vacuolar H"^"+","ATPase subunit")),"V0 domain"))+
+scale_fill_manual(values=met.brewer('Moreau',16),
+  name ="Class",
+  breaks=c("carbonicAnhydrase","channel_Cl","channel_K","channel_water","cuticularProtein","DEGENaC_pickpocket","exchanger_CPA","exchanger_other","NaKatpase_subunit","receptor_CAPA","receptor_leukokinin","receptor_serotonin","Resilin","vatpaseSubunit"),
+  labels=c("Carbonic anhydrase",expression(paste("Cl"^"-","channel")),expression(paste("K"^"+","channel")),"Water channel","Cuticular protein","Pickpocket gene","CPA exchanger","Other exchanger",expression(paste("Na"^"+","K"^"+","ATPase subunit")),"CAPA receptor","Leukokinin receptor","Serotonin receptor","Resilin",expression(paste("Vacuolar H"^"+","ATPase subunit"))))+
+theme_few() +
+  theme(
+  text = element_text(size = 10, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 10),
+  axis.text.y=element_text(size = 10),
+  strip.text = element_text(face="bold"))+ 
+ theme(legend.title = element_text(
+      family = "sans",size = 8),legend.text=element_text(family = "sans",size = 6))+
+ theme(legend.text.align = 0)+
+ theme(legend.key.height= unit(.35, 'cm'),
+        legend.key.width= unit(.5, 'cm'))
+```
+
+```{r}
+#generate histograms of percent identity and of length of hit divided by length of query
+#id 
+id_hist <- ggplot(data=geneContent,aes(x=percIdent)) + 
+geom_histogram(binwidth=5,color="#A1A18A",fill="#A1A18A",alpha=0.7) + 
+labs(x="Percent identity of BLAST hit",y=element_blank())+
+theme_few()+
+theme(plot.title = element_text(size = 12, family = "sans", face = "bold"),
+  text = element_text(size = 10, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 10),
+  axis.text.y=element_text(size = 10),
+  strip.text = element_text(face="bold"))
+```
+
+```{r}
+#length
+length_hist <- ggplot(data=geneContent,aes(x=percSeq)) + 
+geom_histogram(binwidth=.05,color="#e3b577",fill="#e3b577",alpha=0.7) + 
+labs(x="BLAST hit length / query length",y=element_blank())+
+theme_few()+
+theme(plot.title = element_text(size = 12, family = "sans", face = "bold"),
+  text = element_text(size = 10, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 10),
+  axis.text.y=element_text(size = 10),
+  strip.text = element_text(face="bold"))
+```
+
+```{r}
+#compile into one plot
+id_grid <- plot_grid(id_hist,length_hist)
+Histogram <- plot_grid(id_grid,id_by_length,ncol=1)
+```
+
+## Figure
+```{r}
+Histogram
+```
+
+
+<br>
+
+# LOWESS
+LoWeSS curve illustrating survivability as a proportion of habitat by taxon group, with silhouettes from phylopic.
+
+## Code 
+```{r, warning=FALSE}
+#packages
+library(ggplot2)
+library(ggthemes)
+library(rphylopic)
+```
+
+```{r include=FALSE}
+#data
+HLES6=read.table("~/Desktop/desktop/HLES_everything_cellSize6_exampleTaxa.txt",header=T,sep="\t")
+```
+
+```{r}
+#plot code - base 
+lowPlot <- ggplot(HLES6, aes(x = (1-habitatRemaining), y = percentSurvive, color = taxon, fill = taxon))+
+theme_tufte() +
+geom_point() +
+geom_smooth() +
+scale_fill_manual(values=c("#8491A3","#B78B5A","#6D213C","#95BF73","#2F4C38"),
+  name ="Taxon",
+  breaks=c("neogastropods","spider","ants","stylo","diplopoda"),
+  labels=c("Neogastropods","Spiders","Ants","Stylommatophorans","Diplopods"))+
+scale_color_manual(values=c("#8491A3","#B78B5A","#6D213C","#95BF73","#2F4C38"),
+  name ="Taxon",
+  breaks=c("neogastropods","spider","ants","stylo","diplopoda"),
+  labels=c("Neogastropods","Spiders","Ants","Stylommatophorans","Diplopods"))+
+labs(x= "Proportion of habitat destroyed", y="Proportion of habitat surviving",title = "Proportion of taxa surviving vs proportion of habitat destroyed")+
+theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+  text = element_text(size = 12, family = "Tahoma"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 12),
+  axis.text.y=element_text(size = 12),
+  strip.text = element_text(face="bold"))+ 
+xlim(0.5,0.95)+
+ theme(legend.position =c(0.2,0.2))+
+ theme(legend.title = element_text(
+      family = "Tahoma",size = 10))
+
+```
+
+```{r}
+#add phylopics
+ant_uuid <- get_uuid(name = "formicoids")
+neo_uuid <- get_uuid(name = "Tricolia pullus")
+stylo_uuid <-get_uuid(name = "Myosotella myosotis")
+dip_uuid <- get_uuid(name = "Myriapoda")
+spi_uuid <- get_uuid(name = "Liphistius desultor")
+```
+
+```{r}
+#add silhouettes to plot
+LoWeSS=lowPlot + 
+add_phylopic(uuid = ant_uuid,  x = .94, y = .42, height = .043, fill="#6D213C") + 
+add_phylopic(uuid =neo_uuid,  x = .94, y = .6, height = .072, fill="#8491A3") +
+add_phylopic(uuid =stylo_uuid,  x = .94, y = .32, height = .077, fill="#95BF73") + 
+add_phylopic(uuid =dip_uuid,  x = .94, y = .25, height = .049, fill="#2F4C38") +
+add_phylopic(uuid =spi_uuid,  x = .94, y = .49, height = .073, fill="#B78B5A") 
+```
+
+## Figure 
+```{r message=FALSE, warning=FALSE}
+LoWeSS
+```
+
+<br>
+
+# Joined boxplots 
+Boxplots comparing Euclidean distances for increasing dimensionalities for different random walk conditions    
+
+## Code 
+```{r, include=FALSE}
+### 1d example
+endDists1d = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair1d = c(0, 0)
+
+	for(i in 1:10){
+		speciesPair1d = speciesPair1d + sample(c(-1, 1), 2, replace = TRUE)
+	
+	}
+
+	endDists1d = c(endDists1d , sqrt(sum((speciesPair1d[1] - speciesPair1d[2])^2)))
+}
+
+endDists1d = na.omit(endDists1d)
+median(endDists1d)
+min(endDists1d)
+max(endDists1d)
+
+sum(endDists1d==0)
+
+### 2d example: 
+
+endDists2d = c(NA)
+step2d = diag(2)
+
+for(j in 1:1000){
+	speciesPair2d = matrix(rep(0, 4), nrow = 2)
+	
+	for(i in 1:10){
+		step2d = as.matrix(step2d[sample(dim(step2d)[1]), ]) * sample(c(-1, 1), 2, replace = TRUE)
+		speciesPair2d = speciesPair2d +  step2d[1:2, ]
+ 
+	}
+	
+	endDists2d = c(endDists2d, sqrt(sum((speciesPair2d[1, ] - speciesPair2d[2, ])^2)))
+}
+
+endDists2d = na.omit(endDists2d)
+median(endDists2d)
+min(endDists2d)
+max(endDists2d)
+
+
+
+
+
+## 4d example: 
+
+endDists4d = c(NA)
+step4d = diag(4)
+
+for(j in 1:1000){
+	speciesPair4d = matrix(rep(0, 8), nrow = 2)
+	
+	for(i in 1:10){
+		step4d = as.matrix(step4d[sample(dim(step4d)[1]), ]) * sample(c(-1, 1), 4, replace = TRUE)
+		speciesPair4d = speciesPair4d +  step4d[1:2, ]
+ 
+	}
+	
+	endDists4d = c(endDists4d, sqrt(sum((speciesPair4d[1, ] - speciesPair4d[2, ])^2)))
+}
+
+endDists4d = na.omit(endDists4d)
+median(endDists4d)
+min(endDists4d)
+max(endDists4d)
+
+### 8d example: 
+endDists8d = c(NA)
+step8d = diag(8)
+
+for(j in 1:1000){
+	speciesPair8d = matrix(rep(0, 16), nrow = 2)
+	
+	for(i in 1:10){
+		step8d = as.matrix(step8d[sample(dim(step8d)[1]), ]) * sample(c(-1, 1), 8, replace = TRUE)
+		speciesPair8d = speciesPair8d +  step8d[1:2, ]
+ 
+	}
+	
+	endDists8d = c(endDists8d, sqrt(sum((speciesPair8d[1, ] - speciesPair8d[2, ])^2)))
+}
+
+endDists8d = na.omit(endDists8d)
+median(endDists8d)
+min(endDists8d)
+max(endDists8d)
+
+
+### 16d example: 
+
+endDists16d = c(NA)
+step16d = diag(16)
+
+for(j in 1:1000){
+	speciesPair16d = matrix(rep(0, 32), nrow = 2)
+	
+	for(i in 1:10){
+		step16d = as.matrix(step16d[sample(dim(step16d)[1]), ]) * sample(c(-1, 1), 16, replace = TRUE)
+		speciesPair16d = speciesPair16d +  step16d[1:2, ]
+ 
+	}
+	
+	endDists16d = c(endDists16d, sqrt(sum((speciesPair16d[1, ] - speciesPair16d[2, ])^2)))
+}
+
+endDists16d = na.omit(endDists16d)
+median(endDists16d)
+min(endDists16d)
+max(endDists16d)
+
+### 32D example: 
+
+endDists32d = c(NA)
+step32d = diag(32)
+
+for(j in 1:1000){
+	speciesPair32d = matrix(rep(0, 64), nrow = 2)
+	
+	for(i in 1:10){
+		step32d = as.matrix(step32d[sample(dim(step32d)[1]), ]) * sample(c(-1, 1), 32, replace = TRUE)
+		speciesPair32d = speciesPair32d +  step32d[1:2, ]
+ 
+	}
+	
+	endDists32d = c(endDists32d, sqrt(sum((speciesPair32d[1, ] - speciesPair32d[2, ])^2)))
+}
+
+endDists32d = na.omit(endDists32d)
+median(endDists32d)
+min(endDists32d)
+max(endDists32d)
+
+allDists10vect =(c(endDists1d, endDists2d, endDists4d, endDists8d, endDists16d, endDists32d))
+dimValue = rep(c(1, 2, 4, 8, 16, 32), each = 1000)
+timeSteps10 = rep(10, 6000)
+flavor_nd = rep("nd", 6000)
+
+allDists10long_nd = data.frame(dists = allDists10vect, dimension = dimValue, steps = timeSteps10, flavor = flavor_nd)
+
+
+### same stuff, but with 100 time steps
+
+
+### 1d example
+endDists1d100 = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair1d = c(0, 0)
+
+	for(i in 1:100){
+		speciesPair1d = speciesPair1d + sample(c(-1, 1), 2, replace = TRUE)
+	
+	}
+
+	endDists1d100 = c(endDists1d100 , sqrt(sum((speciesPair1d[1] - speciesPair1d[2])^2)))
+}
+
+endDists1d100 = na.omit(endDists1d100)
+median(endDists1d100)
+min(endDists1d100)
+max(endDists1d100)
+
+sum(endDists1d100==0)
+
+### 2d example: 
+
+endDists2d100 = c(NA)
+step2d = diag(2)
+
+for(j in 1:1000){
+	speciesPair2d = matrix(rep(0, 4), nrow = 2)
+	
+	for(i in 1:100){
+		step2d = as.matrix(step2d[sample(dim(step2d)[1]), ]) * sample(c(-1, 1), 2, replace = TRUE)
+		speciesPair2d = speciesPair2d +  step2d[1:2, ]
+ 
+	}
+	
+	endDists2d100 = c(endDists2d100, sqrt(sum((speciesPair2d[1, ] - speciesPair2d[2, ])^2)))
+}
+
+endDists2d100 = na.omit(endDists2d100)
+median(endDists2d100)
+min(endDists2d100)
+max(endDists2d100)
+
+
+
+
+
+## 4d example: 
+
+endDists4d100 = c(NA)
+step4d = diag(4)
+
+for(j in 1:1000){
+	speciesPair4d = matrix(rep(0, 8), nrow = 2)
+	
+	for(i in 1:100){
+		step4d = as.matrix(step4d[sample(dim(step4d)[1]), ]) * sample(c(-1, 1), 4, replace = TRUE)
+		speciesPair4d = speciesPair4d +  step4d[1:2, ]
+ 
+	}
+	
+	endDists4d100 = c(endDists4d100, sqrt(sum((speciesPair4d[1, ] - speciesPair4d[2, ])^2)))
+}
+
+endDists4d100 = na.omit(endDists4d100)
+median(endDists4d100)
+min(endDists4d100)
+max(endDists4d100)
+
+### 8d example: 
+endDists8d100 = c(NA)
+step8d = diag(8)
+
+for(j in 1:1000){
+	speciesPair8d = matrix(rep(0, 16), nrow = 2)
+	
+	for(i in 1:100){
+		step8d = as.matrix(step8d[sample(dim(step8d)[1]), ]) * sample(c(-1, 1), 8, replace = TRUE)
+		speciesPair8d = speciesPair8d +  step8d[1:2, ]
+ 
+	}
+	
+	endDists8d100 = c(endDists8d100, sqrt(sum((speciesPair8d[1, ] - speciesPair8d[2, ])^2)))
+}
+
+endDists8d100 = na.omit(endDists8d100)
+median(endDists8d100)
+min(endDists8d100)
+max(endDists8d100)
+
+
+### 16d example: 
+
+endDists16d100 = c(NA)
+step16d = diag(16)
+
+for(j in 1:1000){
+	speciesPair16d = matrix(rep(0, 32), nrow = 2)
+	
+	for(i in 1:100){
+		step16d = as.matrix(step16d[sample(dim(step16d)[1]), ]) * sample(c(-1, 1), 16, replace = TRUE)
+		speciesPair16d = speciesPair16d +  step16d[1:2, ]
+ 
+	}
+	
+	endDists16d100 = c(endDists16d100, sqrt(sum((speciesPair16d[1, ] - speciesPair16d[2, ])^2)))
+}
+
+endDists16d100 = na.omit(endDists16d100)
+median(endDists16d100)
+min(endDists16d100)
+max(endDists16d100)
+
+### 32D example: 
+
+endDists32d100 = c(NA)
+step32d = diag(32)
+
+for(j in 1:1000){
+	speciesPair32d = matrix(rep(0, 64), nrow = 2)
+	
+	for(i in 1:100){
+		step32d = as.matrix(step32d[sample(dim(step32d)[1]), ]) * sample(c(-1, 1), 32, replace = TRUE)
+		speciesPair32d = speciesPair32d +  step32d[1:2, ]
+ 
+	}
+	
+	endDists32d100 = c(endDists32d100, sqrt(sum((speciesPair32d[1, ] - speciesPair32d[2, ])^2)))
+}
+
+endDists32d100 = na.omit(endDists32d100)
+median(endDists32d100)
+min(endDists32d100)
+max(endDists32d100)
+
+allDists100vect =(c(endDists1d100, endDists2d100, endDists4d100, endDists8d100, endDists16d100, endDists32d100))
+dimValue = rep(c(1, 2, 4, 8, 16, 32), each = 1000)
+timeSteps100 = rep(100, 6000)
+flavor_nd = rep("nd", 6000)
+
+allDists100long_nd = data.frame(dists = allDists100vect, dimension = dimValue, steps = timeSteps100, flavor = flavor_nd)
+
+
+allDists10and100_nd = data.frame(rbind(allDists10long_nd, allDists100long_nd))
+
+
+### compare with code above
+
+### each time step can take exactly one step in *any* direction/dimension
+### so random walks in higher dimensionalities can effectively take
+### as many steps as there are dimensions per time step
+### so you could think of this as combinations of n 1-dimensional random walks 
+
+### run all code to generate a dataframe with 
+### random walks in 1, 2, 4, 8, 16, 32-d of 10 and 100 timesteps
+
+### 1d example
+endDists1d_1 = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair1d = c(0, 0)
+
+	for(i in 1:10){
+		speciesPair1d = speciesPair1d + sample(c(-1, 1), 2, replace = TRUE)
+	
+	}
+
+	endDists1d_1 = c(endDists1d_1 , sqrt(sum((speciesPair1d[1] - speciesPair1d[2])^2)))
+}
+
+endDists1d_1 = na.omit(endDists1d_1)
+median(endDists1d_1)
+min(endDists1d_1)
+max(endDists1d_1)
+
+sum(endDists1d_1==0)
+
+### 2d example: 
+
+endDists2_1d = c(NA)
+
+for(j in 1:1000){
+	speciesPair2d = matrix(rep(0, 4), nrow = 2)
+	
+	for(i in 1:10){
+
+		speciesPair2d = speciesPair2d +  matrix(sample(c(-1, 1), 4, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists2_1d = c(endDists2_1d, sqrt(sum((speciesPair2d[1, ] - speciesPair2d[2, ])^2)))
+}
+
+endDists2_1d = na.omit(endDists2_1d)
+median(endDists2_1d)
+min(endDists2_1d)
+max(endDists2_1d)
+
+
+
+
+
+## 4d example: 
+
+endDists4_1d = c(NA)
+
+for(j in 1:1000){
+	speciesPair4d = matrix(rep(0, 8), nrow = 2)
+	
+	for(i in 1:10){
+		
+		speciesPair4d = speciesPair4d +  matrix(sample(c(-1, 1), 8, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists4_1d = c(endDists4_1d, sqrt(sum((speciesPair4d[1, ] - speciesPair4d[2, ])^2)))
+}
+
+endDists4_1d = na.omit(endDists4_1d)
+median(endDists4_1d)
+min(endDists4_1d)
+max(endDists4_1d)
+
+### 8d example: 
+endDists8_1d = c(NA)
+
+for(j in 1:1000){
+	speciesPair8d = matrix(rep(0, 16), nrow = 2)
+	
+	for(i in 1:10){
+		
+		speciesPair8d = speciesPair8d +  matrix(sample(c(-1, 1), 16, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists8_1d = c(endDists8_1d, sqrt(sum((speciesPair8d[1, ] - speciesPair8d[2, ])^2)))
+}
+
+endDists8_1d = na.omit(endDists8_1d)
+median(endDists8_1d)
+min(endDists8_1d)
+max(endDists8_1d)
+
+
+### 16d example: 
+
+endDists16_1d = c(NA)
+
+for(j in 1:1000){
+	speciesPair16d = matrix(rep(0, 32), nrow = 2)
+	
+	for(i in 1:10){
+		
+		speciesPair16d = speciesPair16d +  matrix(sample(c(-1, 1), 32, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists16_1d = c(endDists16_1d, sqrt(sum((speciesPair16d[1, ] - speciesPair16d[2, ])^2)))
+}
+
+endDists16_1d = na.omit(endDists16_1d)
+median(endDists16_1d)
+min(endDists16_1d)
+max(endDists16_1d)
+
+### 32D example: 
+
+endDists32_1d = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair32d = matrix(rep(0, 64), nrow = 2)
+	
+	for(i in 1:10){
+		
+		speciesPair32d = speciesPair32d +  matrix(sample(c(-1, 1), 64, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists32_1d = c(endDists32_1d, sqrt(sum((speciesPair32d[1, ] - speciesPair32d[2, ])^2)))
+}
+
+endDists32_1d = na.omit(endDists32_1d)
+median(endDists32_1d)
+min(endDists32_1d)
+max(endDists32_1d)
+
+allDists_n1d_10vect =(c(endDists1d_1, endDists2_1d, endDists4_1d, endDists8_1d, endDists16_1d, endDists32_1d))
+dimValue_n1d = rep(c(1, 2, 4, 8, 16, 32), each = 1000)
+timeSteps_n1d_10 = rep(10, 6000)
+flavor_n1d = rep("n1d", 6000)
+
+allDists_n1d_10long = data.frame(dists = allDists_n1d_10vect, dimension = dimValue_n1d, steps = timeSteps_n1d_10, flavor = flavor_n1d)
+
+
+### same stuff, but with 100 time steps
+
+
+### 1d example
+endDists1_1d_100 = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair1d = c(0, 0)
+
+	for(i in 1:100){
+		speciesPair1d = speciesPair1d + sample(c(-1, 1), 2, replace = TRUE)
+	
+	}
+
+	endDists1_1d_100 = c(endDists1_1d_100 , sqrt(sum((speciesPair1d[1] - speciesPair1d[2])^2)))
+}
+
+endDists1_1d_100 = na.omit(endDists1_1d_100)
+median(endDists1_1d_100)
+min(endDists1_1d_100)
+max(endDists1_1d_100)
+
+sum(endDists1_1d_100==0)
+
+### 2d example: 
+
+endDists2_1d_100 = c(NA)
+
+for(j in 1:1000){
+	speciesPair2d = matrix(rep(0, 4), nrow = 2)
+	
+	for(i in 1:100){
+		
+		speciesPair2d = speciesPair2d +  matrix(sample(c(-1, 1), 4, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists2_1d_100 = c(endDists2_1d_100, sqrt(sum((speciesPair2d[1, ] - speciesPair2d[2, ])^2)))
+}
+
+endDists2_1d_100 = na.omit(endDists2_1d_100)
+median(endDists2_1d_100)
+min(endDists2_1d_100)
+max(endDists2_1d_100)
+
+
+
+
+
+## 4d example: 
+
+endDists4_1d_100 = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair4d = matrix(rep(0, 8), nrow = 2)
+	
+	for(i in 1:100){
+		
+		speciesPair4d = speciesPair4d +  matrix(sample(c(-1, 1), 8, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists4_1d_100 = c(endDists4_1d_100, sqrt(sum((speciesPair4d[1, ] - speciesPair4d[2, ])^2)))
+}
+
+endDists4_1d_100 = na.omit(endDists4_1d_100)
+median(endDists4_1d_100)
+min(endDists4_1d_100)
+max(endDists4_1d_100)
+
+### 8d example: 
+endDists8_1d_100 = c(NA)
+
+for(j in 1:1000){
+	speciesPair8d = matrix(rep(0, 16), nrow = 2)
+	
+	for(i in 1:100){
+		
+		speciesPair8d = speciesPair8d +  matrix(sample(c(-1, 1), 16, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists8_1d_100 = c(endDists8_1d_100, sqrt(sum((speciesPair8d[1, ] - speciesPair8d[2, ])^2)))
+}
+
+endDists8_1d_100 = na.omit(endDists8_1d_100)
+median(endDists8_1d_100)
+min(endDists8_1d_100)
+max(endDists8_1d_100)
+
+
+### 16d example: 
+
+endDists16_1d_100 = c(NA)
+
+for(j in 1:1000){
+	speciesPair16d = matrix(rep(0, 32), nrow = 2)
+	
+	for(i in 1:100){
+	
+		speciesPair16d = speciesPair16d +  matrix(sample(c(-1, 1), 32, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists16_1d_100 = c(endDists16_1d_100, sqrt(sum((speciesPair16d[1, ] - speciesPair16d[2, ])^2)))
+}
+
+endDists16_1d_100 = na.omit(endDists16_1d_100)
+median(endDists16_1d_100)
+min(endDists16_1d_100)
+max(endDists16_1d_100)
+
+### 32D example: 
+
+endDists32_1d_100 = c(NA)
+
+
+for(j in 1:1000){
+	speciesPair32d = matrix(rep(0, 64), nrow = 2)
+	
+	for(i in 1:100){
+		
+		speciesPair32d = speciesPair32d +  matrix(sample(c(-1, 1), 64, replace = TRUE), nrow = 2)
+ 
+	}
+	
+	endDists32_1d_100 = c(endDists32_1d_100, sqrt(sum((speciesPair32d[1, ] - speciesPair32d[2, ])^2)))
+}
+
+endDists32_1d_100 = na.omit(endDists32_1d_100)
+median(endDists32_1d_100)
+min(endDists32_1d_100)
+max(endDists32_1d_100)
+
+allDists_n1d_100vect =(c(endDists1_1d_100, endDists2_1d_100, endDists4_1d_100, endDists8_1d_100, endDists16_1d_100, endDists32_1d_100))
+dimValue_n1d = rep(c(1, 2, 4, 8, 16, 32), each = 1000)
+timeSteps_n1d_100_n1d = rep(100, 6000)
+flavor_n1d = rep("n1d", 6000)
+
+allDists_n1d_100long = data.frame(dists = allDists_n1d_100vect, dimension = dimValue_n1d, steps = timeSteps_n1d_100_n1d, flavor = flavor_n1d)
+
+allDists_n1d_10and100 = data.frame(rbind(allDists_n1d_10long, allDists_n1d_100long)) 
+
+allDists10_ndn1d = data.frame(rbind(allDists10long_nd, allDists_n1d_10long))
+allDists100_ndn1d = data.frame(rbind(allDists100long_nd, allDists_n1d_100long))
+
+allDists10and100_all = data.frame(rbind(allDists10_ndn1d, allDists100_ndn1d))
+
+```
+
+```{r, message=FALSE}
+#packages used 
+library(ggplot2)
+library(patchwork)
+library(ggthemes)
+```
+
+```{r, include=FALSE}
+levelOrder = c("1", "2", "4", "8", "16", "32")
+```
+
+```{r}
+# boxplot 1 
+fig1a <- ggplot(allDists10and100_nd, aes(x=as.character(dimension), y=dists,fill=as.character(steps),color=as.character(steps)))+
+geom_boxplot(width = .6, alpha=.6,show.legend = FALSE)+
+scale_x_discrete(name="Dimensionality",labels=c("1d","2d","4d","8d","16d","32d"),limits =c("1","2","4","8","16","32"))+
+scale_y_continuous(name="Euclidean distance", limits = c(-10, 120))+
+scale_color_manual(name = "Random walk flavor \nand time steps", values=c("#96C886","#53782B"),limits=c("10","100"), labels = c("Ten steps, simple", "100 steps, simple"),guide="none")+ 
+scale_fill_manual(name = "Random walk flavor \nand time steps", values=c("#96C886","#53782B"),limits=c("10","100"), labels = c("Ten steps, simple", "100 steps, simple"),guide = guide_legend(override.aes = list(shape = 15)))+
+theme_classic()+
+theme(plot.title = element_text(size = 10, family = "sans", face = "bold"), 
+  text = element_text(size = 8, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 8),
+  axis.text.y=element_text(size = 8),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position=c(0.15,0.82), legend.title = element_text(size=7)) + 
+theme(legend.key.size = unit(0.3, 'cm'))+ 
+ggtitle(" Figure 1a: \n Euclidean distance after 10 or 100 steps \n on integer lattices of different dimensionalities \n (simple random walks)")
+```
+
+```{r}
+#boxplot 2
+fig1b <- ggplot(allDists_n1d_10and100, aes(x=as.character(dimension), y=dists,fill=as.character(steps),color=as.character(steps)))+
+geom_boxplot(width = .6, alpha=.6,show.legend = FALSE)+
+scale_x_discrete(name="Dimensionality",labels=c("1d","2d","4d","8d","16d","32d"),limits =c("1","2","4","8","16","32"))+
+scale_y_continuous(name="Euclidean distance", limits = c(-10, 120))+
+scale_color_manual(name = "Random walk flavor \nand time steps", values=c("#B594B6","#664176"),limits=c("10","100"), labels = c("Ten steps, n 1d", "100 steps, n 1d"),guide="none")+
+scale_fill_manual(name = "Random walk flavor \nand time steps", values=c("#B594B6","#664176"),limits=c("10","100"), labels = c("Ten steps, n 1d", "100 steps, n 1d"),guide = guide_legend(override.aes = list(shape = 15)))+
+theme_classic()+
+theme(plot.title = element_text(size = 10, family = "sans", face = "bold"),
+  text = element_text(size = 8, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 8),
+  axis.text.y=element_text(size = 8),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position=c(0.15,0.82), legend.title = element_text(size=7)) + 
+theme(legend.key.size = unit(0.3, 'cm'))+
+ggtitle(" Figure 1b: \n Euclidean distance after 10 or 100 steps \n on integer lattices of different dimensionalities \n N 1d Random Walks")
+```
+
+```{r}
+#boxplot 3 
+fig1c <- ggplot(allDists10_ndn1d, aes(x=as.character(dimension), y=dists,fill=as.character(flavor),color=as.character(flavor)))+
+geom_boxplot(width = .6, alpha=.6,show.legend = FALSE)+
+scale_x_discrete(name="Dimensionality",labels=c("1d","2d","4d","8d","16d","32d"),limits =c("1","2","4","8","16","32"))+
+scale_y_continuous(name="Euclidean distance", limits = c(-10, 120))+
+scale_color_manual(name = "Random walk flavor \nand time steps", values=c("#96C886","#B594B6"),limits=c("nd","n1d"), labels = c("Ten steps, simple", "Ten steps, n 1d"),guide="none")+
+scale_fill_manual(name = "Random walk flavor \nand time steps", values=c("#96C886","#B594B6"),limits=c("nd","n1d"), labels = c("Ten steps, simple", "Ten steps, n 1d"),guide = guide_legend(override.aes = list(shape = 15)))+
+theme_classic()+
+theme(plot.title = element_text(size = 10, family = "sans", face = "bold"),
+  text = element_text(size = 8, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 8),
+  axis.text.y=element_text(size = 8),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position=c(0.15,0.82), legend.title = element_text(size=7)) + 
+theme(legend.key.size = unit(0.3, 'cm'))+
+ggtitle(" Figure 1c: \n Euclidean distance after 10 steps \n on integer lattices of different dimensionalities \n nD random walks vs. N 1d random walks")
+```
+
+```{r}
+#boxplot 4
+fig1d <- ggplot(allDists100_ndn1d, aes(x=as.character(dimension), y=dists,fill=as.character(flavor),color=as.character(flavor)))+
+geom_boxplot(width = .6, alpha=.6,show.legend = FALSE)+
+scale_x_discrete(name="Dimensionality",labels=c("1d","2d","4d","8d","16d","32d"),limits =c("1","2","4","8","16","32"))+
+scale_y_continuous(name="Euclidean distance", limits = c(-10, 120))+
+scale_color_manual(name = "Random walk flavor \nand time steps", values=c("#53782B","#664176"),limits=c("nd","n1d"), labels = c("100 steps, simple", "100 steps, n 1d"),guide="none")+
+scale_fill_manual(name = "Random walk flavor \nand time steps", values=c("#53782B","#664176"),limits=c("nd","n1d"), labels = c("100 steps, simple", "100 steps, n 1d"),guide = guide_legend(override.aes = list(shape = 15)))+
+theme_classic()+
+theme(plot.title = element_text(size = 10, family = "sans", face = "bold"),
+  text = element_text(size = 8, family = "sans"),
+  axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 8),
+  axis.text.y=element_text(size = 8),
+  strip.text = element_text(face="bold"))+
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_rect( size = 1, linetype = "solid"))+
+theme(legend.position=c(0.15,0.82), legend.title = element_text(size=7)) + 
+theme(legend.key.size = unit(0.3, 'cm'))+
+ggtitle(" Figure 1d: \n Euclidean distance after 100 steps \n on integer lattices of different dimensionalities \n nD random walks vs. N 1d random walks")
+```
+
+```{r}
+Boxplots=(fig1a | fig1b) / (fig1c | fig1d)
+```
+
+## Figure 
+```{r}
+Boxplots
+```
+
+
+<br>
+
+# Ridgeline plot 
+Ridgeline plot using snail betadiversity data 
+
+## Code 
+```{r, message=FALSE}
+#packages used 
+library(ggplot2)
+library(tidyverse)
+library(ggthemes)
+library(ggridges)
+```
+
+```{r include=FALSE}
+hungerCond=read.table("~/Desktop/jesse_snailMeta.txt",header=T,sep="\t")
+hungerData=read.table("~/Desktop/jesse_snailFull.txt",header=T,sep="\t")
+```
+
+```{r include=FALSE}
+#merging them because I need the geoGrp column 
+hungerALL <- left_join(hungerData, hungerCond,all.x = TRUE)
+#removing the ones that we removed from the cond sheet 
+hungerALL_3=hungerALL[complete.cases(hungerALL$geoGrp),]
+```
+
+```{r, warning=FALSE, message=FALSE, out.width="100%"}
+#plot code 
+Ridgeline=ggplot(hungerALL_3, aes(x = distFromDmasech, y = species_lumped, color =
+geoGrp, fill = geoGrp)) +
+geom_density_ridges(
+    jittered_points = TRUE, scale = .95, rel_min_height = .01,
+    point_shape = "|", point_size = 3, size = 0.25,
+    position = position_points_jitter(height = 0)) +
+scale_fill_manual(name = "geographical \n group", 
+  values=c("#96CAAC","#175676","#512D38","#A47963","#A6A57A"))+
+scale_color_manual(name = "geographical \n group", 
+  values=c("#96CAAC","#175676","#512D38","#A47963","#A6A57A"))+
+scale_y_discrete(limits = c("chilorhytis", "ringens", "loxodonta", "crenata", "goniobasis", "pyramis", "inflatula", "papilio", 
+  "triplochilus", "eurystoma", "nodulosa", "omphaloptyx", "elegantissima", "polymorpha", "nudicollum", "lutea", "spinoscapula", 
+  "robiginosa", "subalata", "fragilipennis", "pelewensis", "crassilabris", "alata", "lamellata", "aurea", "microbasodonta",
+"basodonta", "aspera", "pteropurpuroides", "rudicostata", "expansilabris", "unisulcata", "echinata")) +
+ylab("species") +
+xlab("distance from Dmasech (m)")+
+theme(text = element_text(size = 11, family = "sans"),
+  axis.text.y=element_text(size = 9,family="sans",face="italic"),
+  axis.ticks.y=element_blank(),
+  axis.text.x=element_text(size = 9,family="sans"),
+  legend.text=element_text(size=8,family="sans"),legend.title = element_text(size=8))+
+theme(panel.background = element_blank(),panel.grid.major.y = element_line(color = "#D3D3D3",size = 0.25))
+```
+
+## Figure 
+```{r, message=FALSE}
+Ridgeline
+```
+
+<br>
+
+# Map 
+Scattered pie charts for trait clusters mapped to locality data (Palau archipelago)  
+
+## Code
+```{r, message=FALSE}
+#packages used 
+library(sf)
+library(mapview)
+library(osmdata)
+library(scatterpie)
+```
+
+```{r, include=FALSE}
+localityClusts_localityGroupSummaries=read.table("~/Downloads/6.ii.2025_localityClustSummaryData_sppLumped_geogData.csv",header=T,sep=",")
+
+
+chelbacheb_bb = matrix(data = c(134.084, 134.65, 6.946, 7.390), nrow = 2, byrow = TRUE)
+colnames(chelbacheb_bb) = c("min", "max")
+rownames(chelbacheb_bb) = c("x", "y")
+chelbacheb_bb
+
+
+chelbacheb_coastline <- getbb(place_name = "Belau") %>%
+  opq(timeout = 50) %>%
+  add_osm_feature(key = "natural") %>% osmdata_sf()
+
+  
+
+chelbacheb_coastline <- chelbacheb_bb %>%
+  opq(timeout = 50) %>%
+  add_osm_feature(key = "natural", value = "coastline") %>% osmdata_sf()
+
+ 
+scatterColours=c("asAirai"="#96CAAC","asKoror"="#175676","asNgeruktabel"="#512D38","asSouthern"="#A47963","asMixed"="#A6A57A")
+
+```
+
+```{r message=FALSE, warning=FALSE}
+Scatter=ggplot() + 
+  geom_sf(data = chelbacheb_coastline$osm_lines, 
+  inherit.aes = FALSE, 
+  color = "black", 
+  size = 0.1) + 
+  geom_scatterpie(aes(x=long, y=lat), 
+  data= localityClusts_localityGroupSummaries,
+     cols=c("asAirai", "asKoror", "asNgeruktabel", "asSouthern", "asMixed"),  
+     alpha = 0.9, pie_scale = 0.7,color=NA) + 
+  scale_fill_manual(name = "cluster", 
+  values=scatterColours,labels = c("Airai", "Koror","Ngeruktabel","Southern","Mixed"))+
+theme_minimal()+
+theme(text = element_text(size = 11, family = "sans"),
+  axis.ticks.y=element_blank(),
+  axis.text.x=element_text(size = 9,family="sans"),
+  legend.text=element_text(size=8,family="sans"),legend.title = element_text(size=8))+
+theme(panel.background = element_blank(),panel.grid.major.y = element_line(color = "#D3D3D3",size = 0.25))
+```
+
+## Figure 
+```{r message=FALSE, warning=FALSE}
+Scatter
+```
+
+
+<br>
+
+# Illustrator 
+
+Examples of figures I created using Adobe Illustrator 
+
+
+
+<br>
+Arachnid phylogeography map illustrating predicted origin of species using BioGeoBears and ASAP. 
+
+![ ](~/Desktop/rDirectory/rMarkdown/datavis_website/official_sitePhy.png)
+
+<br>
+<br>
+
+Cell model illustrating movement of ions into and out of the cell membrane. 
+
+![ ](~/Desktop/rDirectory/rMarkdown/datavis_website/alk_siteCopy.png)
+
+
+
+![](~/Desktop/rDirectory/rMarkdown/datavis_website/resilin_ppt.png)
+
+
+![](~/Desktop/rDirectory/rMarkdown/datavis_website/resilinAlk.png)
+
