@@ -209,7 +209,7 @@ Ordination
 Principle Components Analysis of differential gene expression between tracheal tissue, malpighian tubule tissue, and midgut tissue, using [Chaoborid dataset](https://github.com/tahneeames/chaoboridae). 
 <br>
 
-##Code 
+## Code 
 
 ```{r, message=FALSE, warning=FALSE}
 #packages used 
@@ -1350,19 +1350,27 @@ Examples of figures I created using Adobe Illustrator
 <br>
 Arachnid phylogeography map illustrating predicted origin of species using BioGeoBears and ASAP. 
 
-![ ](~/Desktop/rDirectory/rMarkdown/datavis_website/official_sitePhy.png)
+```{r}
+knitr::include_graphics("official_sitePhy.png")
+```
 
 <br>
 <br>
 
 Cell model illustrating movement of ions into and out of the cell membrane. 
 
-![ ](~/Desktop/rDirectory/rMarkdown/datavis_website/alk_siteCopy.png)
+```{r}
+knitr::include_graphics("alk_siteCopy.png")
+```
 
 
+```{r}
+knitr::include_graphics("resilin_ppt.png")
+```
 
-![](~/Desktop/rDirectory/rMarkdown/datavis_website/resilin_ppt.png)
 
+```{r}
+knitr::include_graphics("resilinAlk.png")
+```
 
-![](~/Desktop/rDirectory/rMarkdown/datavis_website/resilinAlk.png)
 
