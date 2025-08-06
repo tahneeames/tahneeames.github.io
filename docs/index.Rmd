@@ -8,7 +8,7 @@ output:
 
 # About
 
-Data visualization is critical for effective communication of scientific data. This portfolio illustrates my dedication to assisting scientists, especially in the biological fields, in crafting aesthetically appealing figures that can show off their data.  <br>
+Data visualization is critical for effective communication of scientific data, yet it is an area that many scientists struggle with. My aim with this project is to assist scientists, especially biologists, with statistics and data visualization. Below are some examples of figures that I have produced.  <br>
 <br>
 
 Dropdown menu includes code and resultant figures, sorted by plot type.
@@ -209,7 +209,7 @@ Ordination
 Principle Components Analysis of differential gene expression between tracheal tissue, malpighian tubule tissue, and midgut tissue, using [Chaoborid dataset](https://github.com/tahneeames/chaoboridae). 
 <br>
 
-## Code 
+##Code 
 
 ```{r, message=FALSE, warning=FALSE}
 #packages used 
@@ -1350,19 +1350,19 @@ Examples of figures I created using Adobe Illustrator
 <br>
 Arachnid phylogeography map illustrating predicted origin of species using BioGeoBears and ASAP. 
 
-![ ](~/Desktop/rDirectory/new_markdown/official_sitePhy.png)
+![ ](~/Desktop/rDirectory/rMarkdown/datavis_website/official_sitePhy.png)
 
 <br>
 <br>
 
 Cell model illustrating movement of ions into and out of the cell membrane. 
 
-![ ](~/Desktop/rDirectory/new_markdown/alk_siteCopy.png)
+![ ](~/Desktop/rDirectory/rMarkdown/datavis_website/alk_siteCopy.png)
 
 
 
-![](~/Desktop/rDirectory/new_markdown/resilin_ppt.png)
+![](~/Desktop/rDirectory/rMarkdown/datavis_website/resilin_ppt.png)
 
 
-![](~/Desktop/rDirectory/new_markdown/resilinAlk.png)
+![](~/Desktop/rDirectory/rMarkdown/datavis_website/resilinAlk.png)
 
