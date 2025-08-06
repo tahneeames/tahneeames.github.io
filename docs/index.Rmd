@@ -1350,8 +1350,12 @@ Examples of figures I created using Adobe Illustrator
 <br>
 Arachnid phylogeography map illustrating predicted origin of species using BioGeoBears and ASAP. 
 
+```{r, include=FALSE}
+Phylogeny=knitr::include_graphics("official_sitePhy.png")
+```
+
 ```{r}
-knitr::include_graphics("official_sitePhy.png")
+Phylogeny
 ```
 
 <br>
@@ -1359,18 +1363,28 @@ knitr::include_graphics("official_sitePhy.png")
 
 Cell model illustrating movement of ions into and out of the cell membrane. 
 
+```{r, include=FALSE}
+Model_v1=knitr::include_graphics("alk_siteCopy.png")
+```
+
 ```{r}
-knitr::include_graphics("alk_siteCopy.png")
+Model_v1
 ```
 
 
-```{r}
-knitr::include_graphics("resilin_ppt.png")
+```{r, include=FALSE}
+Model_v2=knitr::include_graphics("resilin_ppt.png")
 ```
 
-
 ```{r}
-knitr::include_graphics("resilinAlk.png")
+Model_v2
 ```
 
+```{r, include=FALSE}
+Model_v3=knitr::include_graphics("resilinAlk.png")
+```
+
+```{r}
+Model_v3
+```
 
